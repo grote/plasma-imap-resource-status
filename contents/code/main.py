@@ -21,13 +21,14 @@ from PyQt4.QtGui import QGraphicsLinearLayout
 from PyKDE4.plasma import Plasma
 from PyKDE4 import plasmascript
 
+import time
 import dbus
 from dbus.mainloop.qt import DBusQtMainLoop
 
 # TODO make the resource configurable
 RES = 'akonadi_imap_resource_6'
 
-class HelloPython(plasmascript.Applet):
+class IMAPresourceStatus(plasmascript.Applet):
   def __init__(self,parent,args=None):
     plasmascript.Applet.__init__(self,parent)
 
@@ -45,8 +46,21 @@ class HelloPython(plasmascript.Applet):
     loop = DBusQtMainLoop()
     dbus.set_default_main_loop(loop)
     self.sessionBus = dbus.SessionBus()
-    self.imap_res = self.sessionBus.get_object('org.freedesktop.Akonadi.Agent.' + RES, '/')
-    self.imap_res.connect_to_signal("onlineChanged", self.onlineChanged)
+
+    while True:
+      # ugly hack to wait for service to be available
+      try:
+        self.imap_res = self.sessionBus.get_object('org.freedesktop.Akonadi.Agent.' + RES, '/')
+        self.imap_res.connect_to_signal("onlineChanged", self.onlineChanged)
+      except dbus.exceptions.DBusException as e:
+        if(e.get_dbus_name() == "org.freedesktop.DBus.Error.ServiceUnknown"):
+          # Service is not yet ready
+          print "Waiting for 'org.freedesktop.Akonadi.Agent.%s/' to become available..." % RES
+          time.sleep(0.2)
+        else:
+          break
+      else:
+        break
 
     # Icon
     self.layout = QGraphicsLinearLayout(Qt.Horizontal, self.applet)
@@ -89,5 +103,5 @@ class HelloPython(plasmascript.Applet):
 
 
 def CreateApplet(parent):
-  return HelloPython(parent)
+  return IMAPresourceStatus(parent)
 

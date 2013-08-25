@@ -8,4 +8,4 @@ all:
 	@kbuildsycoca4 2> /dev/null
 
 run:
-	plasmoidviewer plasma-imap-resource-status
+	plasma-windowed plasma-imap-resource-status
