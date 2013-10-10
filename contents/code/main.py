@@ -47,8 +47,11 @@ class IMAPresourceStatus(plasmascript.Applet):
     dbus.set_default_main_loop(loop)
     self.sessionBus = dbus.SessionBus()
 
-    while True:
+    i = 0
+
+    while i < 10:
       # ugly hack to wait for service to be available
+      i = i + 1
       try:
         self.imap_res = self.sessionBus.get_object('org.freedesktop.Akonadi.Agent.' + RES, '/')
         self.imap_res.connect_to_signal("onlineChanged", self.onlineChanged)
